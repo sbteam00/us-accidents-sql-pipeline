@@ -50,7 +50,7 @@ CONFIG = {
     "host":     "localhost",
     "port":     5432,
     "user":     "postgres",       # your pgAdmin superuser name
-    "password": "24112400",       # your pgAdmin password
+    "password": "password",       # your pgAdmin password
     "database": "postgres",       # connect to default db first to create our db
 }
 
