@@ -81,7 +81,7 @@ DB_CONFIG = {
     "host":     "localhost",
     "port":     5432,
     "user":     "postgres",
-    "password": "24112400",   # ← update this
+    "password": "password",   # ← update this
     "database": "us_accidents_db",
 }
 
