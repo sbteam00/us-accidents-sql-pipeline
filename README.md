@@ -415,5 +415,11 @@ Moosavi, Sobhan, Mohammad Hossein Samavatian, Srinivasan Parthasarathy, Radu Teo
 
 ## Author
 
-Shubham — Data Science & Data Engineering Portfolio Project  
-Mumbai, India · 2025
+**Shubham Anil Ghorpade**
+
+- GitHub: [@sbteam00](https://github.com/sbteam00)
+- LinkedIn: [linkedin.com/in/shubham-ghorpade](https://linkedin.com/in/shubham-ghorpade-9b0402377)
+
+---
+
+
