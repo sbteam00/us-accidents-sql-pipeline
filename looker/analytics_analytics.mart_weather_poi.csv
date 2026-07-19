@@ -1,0 +1,27 @@
+analysis_type,category,accident_count,avg_severity,avg_duration_mins,critical_count,critical_rate_pct,avg_sev_false,pct_of_total,display_rank
+crossing,crossing,807685,2.060,,,,2.221,,5
+junction,junction,514454,2.286,,,,2.196,,2
+junction_and_signal,junction + signal,8334,2.324,,,,2.217,,1
+light_condition,Dawn_Dusk_Transition,945168,2.207,110.57,23012,2.43,,13.40,1
+light_condition,Full_Day,4918009,2.202,104.59,107405,2.18,,69.74,2
+light_condition,Full_Night,1188379,2.201,124.25,48121,4.05,,16.85,3
+roundabout,roundabout,234,2.073,,,,2.203,,4
+traffic_signal,traffic_signal,1042268,2.085,,,,2.223,,3
+visibility_bucket,Moderate,500243,2.232,103.40,12866,2.57,,7.09,1
+visibility_bucket,Clear,6349000,2.201,108.97,159501,2.51,,90.04,2
+visibility_bucket,Low,202313,2.189,112.99,6171,3.05,,2.87,3
+weather_condition,Fair,2501947,2.127,114.07,57378,2.29,,35.48,1
+weather_condition,Mostly Cloudy,967090,2.216,108.00,21900,2.26,,13.71,2
+weather_condition,Cloudy,800733,2.160,113.71,22026,2.75,,11.36,3
+weather_condition,Partly Cloudy,662013,2.212,106.35,14657,2.21,,9.39,4
+weather_condition,Clear,615351,2.363,97.03,19329,3.14,,8.73,5
+weather_condition,Light Rain,336260,2.243,103.96,8738,2.60,,4.77,6
+weather_condition,Overcast,321868,2.385,92.67,11380,3.54,,4.56,7
+weather_condition,Scattered Clouds,176183,2.380,99.43,4991,2.83,,2.50,8
+weather_condition,Light Snow,123498,2.241,112.88,4426,3.58,,1.75,9
+weather_condition,Fog,91222,2.136,111.41,2474,2.71,,1.29,10
+weather_condition,Rain,79735,2.253,98.98,1893,2.37,,1.13,11
+weather_condition,Haze,66394,2.189,107.82,925,1.39,,0.94,12
+weather_condition,Fair / Windy,35049,2.143,119.95,967,2.76,,0.50,13
+weather_condition,Heavy Rain,30844,2.259,95.48,711,2.31,,0.44,14
+weather_condition,Light Drizzle,21302,2.263,100.34,688,3.23,,0.30,15
