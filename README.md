@@ -172,6 +172,10 @@ Creates `us_accidents_db` database with `raw.accidents` table (7.05M rows) and 9
 
 Create `~/.dbt/profiles.yml`:
 
+```bash
+dbt init us_accidents_dbt
+```
+
 ```yaml
 us_accidents_dbt:
   target: dev
