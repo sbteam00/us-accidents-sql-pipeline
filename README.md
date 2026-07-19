@@ -396,6 +396,7 @@ python preprocess.py
 python ingest.py
 
 # 3. dbt full pipeline
+dbt init us_accidents_dbt
 cd us_accidents_dbt && dbt run && dbt test
 
 # 4. Streamlit dashboard
