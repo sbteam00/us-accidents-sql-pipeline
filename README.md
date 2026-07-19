@@ -284,7 +284,7 @@ fact_accidents  7,051,556 rows  numeric facts + FK to all 4 dims
 
 ### dbt lineage graph
 
-![dbt Lineage Graph](us-accidents-sql-pipeline/docs/lineage_graph.png)
+![dbt Lineage Graph](/docs/lineage_graph.png)
 
 ### Test results
 
