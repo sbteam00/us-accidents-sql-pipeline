@@ -1,0 +1,141 @@
+version: 2
+
+models:
+  - name: int_temporal
+    description: >
+      Temporal aggregations over stg_accidents. Produces monthly counts
+      with MoM change (LAG), yearly counts with YoY change (LAG), and
+      hourly distribution with severity ranking. All three granularities
+      are unioned into one table with a 'granularity' column to distinguish
+      them. Excludes 2023 from yearly aggregation (partial year).
+      Key finding: COVID lockdown (Mar-Jun 2020) spiked critical rates
+      to 3.77-4.71% despite stable total volumes.
+    columns:
+      - name: granularity
+        description: "One of: monthly, yearly, hourly"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['monthly', 'yearly', 'hourly']
+      - name: period
+        description: >
+          Time period for the row. For monthly/yearly: truncated date.
+          For hourly: reference date + hour interval (unpack with EXTRACT).
+        tests:
+          - not_null
+      - name: accident_count
+        description: Number of accidents in this period.
+        tests:
+          - not_null
+      - name: pct_change
+        description: >
+          Period-over-period percentage change via LAG().
+          NULL for the first period of each granularity.
+          NULL for all hourly rows (no sequential ordering for hours).
+
+  - name: int_geo_hotspots
+    description: >
+      Geographic aggregations at city and state level over stg_accidents.
+      Includes accident count, avg severity, avg duration, critical count,
+      critical rate, and window-function rankings. City rows include
+      rank_within_state (top cities per state). State rows use
+      rank_within_state as critical_rate_rank for state-level funnel.
+      Key finding: California accounts for 22% of all accidents but has
+      only a 0.70% critical rate — highest volume, lowest severity state.
+    columns:
+      - name: geo_level
+        description: "One of: city, state"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['city', 'state']
+      - name: state
+        description: Two-letter US state code.
+        tests:
+          - not_null
+      - name: accident_count
+        description: Total accidents at this geographic level.
+        tests:
+          - not_null
+      - name: avg_severity
+        description: Average severity score (1-4) for this location.
+      - name: critical_rate_pct
+        description: Percentage of accidents at severity 4 (critical).
+      - name: volume_rank
+        description: Rank by accident count (1 = most accidents).
+      - name: severity_rank
+        description: Rank by avg severity (1 = highest avg severity).
+
+  - name: int_weather_poi
+    description: >
+      Weather condition and POI infrastructure aggregations over
+      stg_accidents. Combines four analysis types in one table:
+      weather_condition, visibility_bucket, light_condition, and
+      poi (one row per POI feature with avg severity TRUE vs FALSE).
+      Key findings: Clear weather has higher avg severity (2.363) than
+      rain or fog. Junctions have the highest POI severity (2.286).
+      Roundabouts have the lowest (2.073).
+    columns:
+      - name: analysis_type
+        description: >
+          One of: weather_condition, visibility_bucket,
+          light_condition, junction, crossing, traffic_signal,
+          roundabout, junction_and_signal (and other POI names).
+        tests:
+          - not_null
+      - name: category
+        description: The specific value within this analysis type.
+        tests:
+          - not_null
+      - name: accident_count
+        description: Number of accidents matching this category.
+      - name: avg_severity
+        description: >
+          For weather/visibility/light rows: avg severity for this category.
+          For POI rows: avg severity when this feature is TRUE.
+      - name: avg_sev_false
+        description: >
+          For POI rows only: avg severity when this feature is FALSE.
+          NULL for weather/visibility/light rows.
+
+  - name: int_funnel
+    description: >
+      Severity funnel aggregations at four levels: overall national,
+      by light condition, by incident context, and monthly cohort trend.
+      All four are unioned into one table with a 'funnel_dimension' column.
+      Key findings: Full_Night has 4.05% critical rate vs Full_Day 2.18%.
+      road_closure incidents have 41.36% critical rate. COVID lockdown
+      (Mar-Jun 2020) produced critical rate spikes of 3.77-4.71%.
+    columns:
+      - name: funnel_dimension
+        description: >
+          One of: overall, by_light, by_context, monthly_cohort.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['overall', 'by_light', 'by_context', 'monthly_cohort']
+      - name: dimension_value
+        description: >
+          The specific value within this funnel dimension.
+          'all' for overall, light condition name for by_light,
+          incident context label for by_context, YYYY-MM for monthly_cohort.
+        tests:
+          - not_null
+      - name: total
+        description: Total accidents in this dimension segment.
+        tests:
+          - not_null
+      - name: critical
+        description: Accidents at severity 4 (critical) in this segment.
+      - name: critical_rate_pct
+        description: Percentage of accidents that are severity 4.
+      - name: cohort_period
+        description: >
+          Date for monthly_cohort rows only. NULL for other dimensions.
+      - name: next_period_critical_rate
+        description: >
+          LEAD() value — next month's critical rate for monthly_cohort rows.
+          Useful for spotting trend reversals. NULL for other dimensions.
