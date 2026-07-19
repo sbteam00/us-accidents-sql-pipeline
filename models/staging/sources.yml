@@ -1,0 +1,55 @@
+version: 2
+
+sources:
+  - name: raw
+    database: us_accidents_db
+    schema: raw
+    description: >
+      Raw accident data loaded by ingest.py from US_Accidents_cleaned.csv.
+      Single source of truth — all dbt models trace back to this table.
+    tables:
+      - name: accidents
+        description: >
+          7.05M US accident records (2016-2022) sourced from the Kaggle
+          US Accidents dataset. Pre-cleaned by preprocess.py.
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+          - name: severity
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: [1, 2, 3, 4]
+          - name: start_time
+            tests:
+              - not_null
+          - name: state
+            tests:
+              - not_null
+          - name: source
+            tests:
+              - not_null
+          - name: junction
+            tests:
+              - not_null
+          - name: crossing
+            tests:
+              - not_null
+          - name: traffic_signal
+            tests:
+              - not_null
+          - name: hour_of_day
+            tests:
+              - not_null
+          - name: day_of_week
+            tests:
+              - not_null
+          - name: is_weekend
+            tests:
+              - not_null
+          - name: is_rush_hour
+            tests:
+              - not_null

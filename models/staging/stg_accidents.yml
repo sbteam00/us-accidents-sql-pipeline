@@ -1,0 +1,167 @@
+version: 2
+
+models:
+  - name: stg_accidents
+    description: >
+      Staging view over raw.accidents. Selects all columns explicitly,
+      applies minor type casts (start_time, end_time, weather_timestamp
+      to TIMESTAMP), and renames id to accident_id for clarity.
+      No aggregation, filtering, or business logic applied here.
+    columns:
+      - name: accident_id
+        description: Renamed from raw.id — Postgres serial primary key.
+        tests:
+          - unique
+          - not_null
+
+      - name: source_id
+        description: >
+          Original dataset identifier from the Kaggle CSV. May have
+          gaps due to row deletion during preprocessing.
+
+      - name: source
+        description: >
+          Traffic API that reported the accident.
+          Source1 = MapQuest (~57%), Source2 = Bing (~41%),
+          Source3 = minor third source (~1%).
+        tests:
+          - not_null
+
+      - name: severity
+        description: >
+          Accident severity 1 (least) to 4 (most severe).
+          Severity 2 accounts for ~80% of all records.
+        tests:
+          - not_null
+
+      - name: start_time
+        description: Local date and time when the accident was reported.
+        tests:
+          - not_null
+
+      - name: end_time
+        description: >
+          Local date and time when the accident impact cleared.
+          Filter duration_mins between 0 and 1440 for reliable analysis.
+
+      - name: duration_mins
+        description: >
+          end_time minus start_time in minutes, rounded to 2 decimal
+          places. Values outside 0-1440 are outliers.
+
+      - name: state
+        description: Two-letter US state code.
+        tests:
+          - not_null
+
+      - name: city
+        description: City where the accident occurred.
+
+      - name: county
+        description: County where the accident occurred.
+
+      - name: zipcode
+        description: >
+          US zipcode as string to preserve leading zeros.
+          Truncated from hyphenated format during preprocessing.
+
+      - name: temperature_f
+        description: Air temperature in Fahrenheit at time of accident.
+
+      - name: humidity_pct
+        description: Relative humidity percentage at time of accident.
+
+      - name: pressure_in
+        description: Atmospheric pressure in inches of mercury.
+
+      - name: visibility_mi
+        description: Visibility in miles at time of accident.
+
+      - name: wind_speed_mph
+        description: Wind speed in miles per hour.
+
+      - name: precipitation_in
+        description: >
+          Precipitation in inches. Nulls set to 0.0 during preprocessing
+          as they indicate no recorded precipitation.
+
+      - name: weather_condition
+        description: Free-text weather condition label from traffic API.
+
+      - name: junction
+        description: >
+          TRUE if accident occurred near a road junction.
+          Highest avg severity of all 13 POI features (2.286).
+        tests:
+          - not_null
+
+      - name: crossing
+        description: TRUE if accident occurred near a pedestrian crossing.
+        tests:
+          - not_null
+
+      - name: traffic_signal
+        description: TRUE if accident occurred near a traffic signal.
+        tests:
+          - not_null
+
+      - name: roundabout
+        description: >
+          TRUE if accident occurred near a roundabout.
+          Lowest avg severity of all POI features (2.073).
+        tests:
+          - not_null
+
+      - name: turning_loop
+        description: >
+          TRUE if accident occurred near a turning loop.
+          Zero TRUE values in cleaned dataset — analytically inert.
+
+      - name: sunrise_sunset
+        description: Day or Night based on sunrise/sunset times.
+
+      - name: light_condition_category
+        description: >
+          Derived from all 4 twilight columns.
+          Values: Full_Day, Full_Night, Dawn_Dusk_Transition.
+          Nighttime has nearly double the critical rate of daytime.
+
+      - name: hour_of_day
+        description: Hour extracted from start_time (0-23).
+        tests:
+          - not_null
+
+      - name: day_of_week
+        description: Day name extracted from start_time.
+        tests:
+          - not_null
+
+      - name: is_weekend
+        description: TRUE if accident occurred on Saturday or Sunday.
+        tests:
+          - not_null
+
+      - name: is_rush_hour
+        description: TRUE if start_time falls in 7-9am or 4-6pm.
+        tests:
+          - not_null
+
+      - name: temp_bucket
+        description: >
+          Temperature range bucket.
+          Values: Freezing, Cold, Mild, Warm, Hot.
+
+      - name: visibility_bucket
+        description: >
+          Visibility range bucket.
+          Values: Low, Moderate, Clear.
+
+      - name: incident_context
+        description: >
+          Two-stage hybrid classification from Description text and
+          POI columns. ~48% remain as 'other' — known limitation.
+
+      - name: description
+        description: >
+          Free-text accident description from traffic API.
+          Use incident_context for GROUP BY queries instead.
