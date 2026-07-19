@@ -1,0 +1,148 @@
+version: 2
+
+models:
+  - name: dim_location
+    description: >
+      Location dimension table. One row per unique combination of city,
+      county, state, zipcode, street, timezone, and airport_code.
+      Surrogate key location_id generated via MD5 hash of natural key.
+    columns:
+      - name: location_id
+        description: MD5 surrogate key — primary key of this dimension.
+        tests:
+          - unique
+          - not_null
+      - name: state
+        description: Two-letter US state code.
+        tests:
+          - not_null
+
+  - name: dim_time
+    description: >
+      Time dimension table. One row per unique start_time value with all
+      temporal attributes pre-computed — hour, day, month, year, quarter,
+      rush hour flag, weekend flag, and COVID lockdown period flag.
+      Avoids repeated EXTRACT() calls in analytical queries.
+    columns:
+      - name: time_id
+        description: MD5 surrogate key of start_time — primary key.
+        tests:
+          - unique
+          - not_null
+      - name: start_time
+        description: Accident start timestamp.
+        tests:
+          - not_null
+      - name: is_covid_lockdown_period
+        description: >
+          TRUE if the accident occurred March-June 2020. Flagged because
+          this period shows a critical rate spike (3.77-4.71%) due to
+          emptier roads enabling higher speeds despite lower volume.
+
+  - name: dim_weather
+    description: >
+      Weather dimension table. One row per unique combination of weather
+      condition attributes at the time of each accident. Groups all
+      environmental condition columns together.
+      Key finding: Clear weather has higher avg severity (2.363) than
+      rain (2.253), snow, or fog — speed effect on emptier roads.
+    columns:
+      - name: weather_id
+        description: MD5 surrogate key — primary key of this dimension.
+        tests:
+          - unique
+          - not_null
+      - name: light_condition_category
+        description: >
+          Full_Day, Full_Night, or Dawn_Dusk_Transition.
+          Full_Night has nearly double the critical rate of Full_Day
+          (4.05% vs 2.18%).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Full_Day', 'Full_Night', 'Dawn_Dusk_Transition']
+
+  - name: dim_road
+    description: >
+      Road features dimension table. One row per unique combination of
+      the 13 POI boolean flags and incident_context label. Groups all
+      road infrastructure columns together.
+      Key findings: junction=TRUE has highest avg severity (2.286).
+      roundabout=TRUE has lowest (2.073) — supports traffic engineering
+      evidence on roundabout safety benefits.
+    columns:
+      - name: road_id
+        description: MD5 surrogate key — primary key of this dimension.
+        tests:
+          - unique
+          - not_null
+      - name: incident_context
+        description: Two-stage hybrid incident classification label.
+        tests:
+          - not_null
+      - name: junction
+        description: TRUE if accident occurred near a road junction.
+        tests:
+          - not_null
+      - name: crossing
+        description: TRUE if accident occurred near a pedestrian crossing.
+        tests:
+          - not_null
+
+  - name: fact_accidents
+    description: >
+      Central fact table — one row per accident. Contains all measurable
+      numeric facts plus foreign keys to dim_location, dim_time,
+      dim_weather, and dim_road. Primary table for all analytical queries.
+      Join to dimension tables for contextual attributes, aggregate fact
+      columns for metrics. 7.05M rows covering 2016-2022.
+    columns:
+      - name: accident_id
+        description: Primary key — Postgres serial ID from raw.accidents.
+        tests:
+          - unique
+          - not_null
+      - name: location_id
+        description: Foreign key to dim_location.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_location')
+                field: location_id
+      - name: time_id
+        description: Foreign key to dim_time.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_time')
+                field: time_id
+      - name: weather_id
+        description: Foreign key to dim_weather.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_weather')
+                field: weather_id
+      - name: road_id
+        description: Foreign key to dim_road.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_road')
+                field: road_id
+      - name: severity
+        description: Accident severity 1-4.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+      - name: start_time
+        description: Denormalised from dim_time for fast filtering.
+        tests:
+          - not_null
